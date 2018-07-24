@@ -201,9 +201,9 @@ jobs:
       - CC:  clang
       - GENERATOR: Ninja
       - BUILD_PARALLEL_JOBS: 4
-      - CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DHERA_DEBUGGING=OFF
+      - CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DHERA_DEBUGGING=OFF -DHERA_WAVM=ON
     docker:
-      - image: ethereum/cpp-build-env
+      - image: ethereum/cpp-build-env:3
     steps:
       - checkout
       - *update-submodules
