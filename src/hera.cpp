@@ -37,6 +37,16 @@
 #include <wasm-printing.h>
 #include <wasm-validator.h>
 
+#if HERA_WAVM
+#define DLL_IMPORT
+#include <IR/Module.h>
+#include <IR/Validate.h>
+#include <WASM/WASM.h>
+#include <Runtime/Runtime.h>
+#include <Runtime/Linker.h>
+#include <Runtime/Intrinsics.h>
+#endif
+
 #include <evmc/evmc.h>
 
 #include <evm2wasm.h>
@@ -67,6 +77,59 @@ struct hera_instance : evmc_instance {
 };
 
 namespace {
+
+/**** wavm stuff*****/
+#if HERA_WAVM
+struct TestResolver : Runtime::Resolver
+{
+    bool resolve(
+      const std::string& moduleName,
+      const std::string& exportName,
+      IR::ObjectType type,
+      Runtime::Object*& outObject) override
+    {
+      (void)moduleName;
+      (void)exportName;
+      (void)type;
+      (void)outObject;
+      return false;
+    }
+};
+
+bool loadModule(const char* filename,IR::Module& outModule) {
+  (void)filename;
+  vector<uint8_t> wasmBytes;
+  Serialization::MemoryInputStream stream((const U8*)wasmBytes.data(),wasmBytes.size());
+  WASM::serialize(stream,outModule);
+  return true;
+}
+
+void wavm_test() {
+  IR::Module module;
+  if (!loadModule("test.wasm", module)) abort();
+
+  Runtime::Compartment* compartment = Runtime::createCompartment();
+  //Runtime::Context* context = Runtime::createContext(compartment);
+
+  TestResolver resolver;
+  Runtime::LinkResult linkResult = Runtime::linkModule(module, resolver);
+  if (!linkResult.success) abort();
+
+  Runtime::ModuleInstance* moduleInstance = Runtime::instantiateModule(
+	compartment,
+	module,
+	std::move(linkResult.resolvedImports),
+	"test.wasm");
+
+  if (!moduleInstance) abort();
+  
+  Runtime::FunctionInstance* startFunction = Runtime::getStartFunction(moduleInstance);
+  if (!startFunction) abort();
+}
+#endif
+/**** end of wavm stuff*****/
+
+
 
 bool hasWasmPreamble(vector<uint8_t> const& _input) {
   return
@@ -525,6 +588,9 @@ extern "C" {
 
 evmc_instance* evmc_create_hera()
 {
+#if HERA_WAVM
+  wavm_test();
+#endif
   hera_instance* instance = new hera_instance;
   instance->destroy = hera_destroy;
   instance->execute = hera_execute;
