@@ -19,12 +19,12 @@ set(patch_command "sed -E 's/ SHARED / /' CMakeLists.txt")
 
 ExternalProject_Add(wavm
     PREFIX ${prefix}
-    DOWNLOAD_NAME wavm-1cb9b413d4ee73c6d58513839343a0a409254558.tar.gz
+    DOWNLOAD_NAME wavm-a0baaec170b55cc60cfe6bcc6b36add953a065d8.tar.gz
     DOWNLOAD_DIR ${prefix}/downloads
     SOURCE_DIR ${source_dir}
     BINARY_DIR ${binary_dir}
-    URL https://github.com/AndrewScheidecker/WAVM/archive/1cb9b413d4ee73c6d58513839343a0a409254558.tar.gz
-    URL_HASH SHA256=56d2054ad4350ab61882c0d5a988d7f067027824dd30667b097fc5b26c525b15
+    URL https://github.com/AndrewScheidecker/WAVM/archive/a0baaec170b55cc60cfe6bcc6b36add953a065d8.tar.gz
+    URL_HASH SHA256=da184e2c077e257dea82c13b2e5ae1fc03d1dc306a1c9a6f84838cff7390b75a
     PATCH_COMMAND sh ${CMAKE_CURRENT_LIST_DIR}/patch_wavm.sh
     CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
